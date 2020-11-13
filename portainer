@@ -23,7 +23,7 @@ STOP_ACTION = "stop"
 STATUS_ACTION = "status"
 IMAGE_NAME = "portainer/portainer-ce:alpine"
 CONTAINER_NAME = "portainer"
-VOLUME_NAME = "portainer"
+VOLUME_NAME = "portainer_vol"
 ENV_REGISTRY_LOCAL = "REGISTRY_LOCAL"
 
 
