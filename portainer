@@ -16,6 +16,7 @@ from docker import from_env
 from docker.errors import DockerException, ImageNotFound, NotFound
 from docker.types import Mount
 
+
 # constantes globais
 START_ACTION = "start"
 STOP_ACTION = "stop"
@@ -72,7 +73,9 @@ def create_volume():
     volume = get_volume()
     if volume is None:
         client = get_client()
-        client.volumes.create(name=get_volume_name(), driver="local", driver_opts={}, labels={})
+        print("creating volume " + get_volume_name() + " ...")
+        volume = client.volumes.create(name=get_volume_name(), driver="local", driver_opts={}, labels={})
+    return volume
 
 
 def get_image_name():
@@ -95,8 +98,12 @@ def get_image():
 
 
 def pull_image():
-    client = get_client()
-    return client.images.pull(get_image_name())
+    image = get_image()
+    if image is None:
+        client = get_client()
+        print("pulling image " + get_image_name() + " ...")
+        image = client.images.pull(get_image_name())
+    return image
 
 
 def remove_image():
@@ -172,17 +179,9 @@ def run_action(action):
         container = get_container()
 
         if action == START_ACTION:
-            if get_image() is None:
-                print("pulling image " + get_image_name() + " ...")
-                pull_image()
-
-            if get_volume() is None:
-                print("creating volume " + get_volume_name() + " ...")
-                create_volume()
-
-            if container is not None:
-                remove_container()
-
+            pull_image()
+            create_volume()
+            remove_container()
             container = start_container()
             print(get_container_name() + " running: " + container.short_id)
 
