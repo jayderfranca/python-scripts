@@ -137,21 +137,21 @@ def start_container():
     image_name = get_image_name()
     client = get_client()
 
-    if is_linux():
-        network_mode = "host"
-        ports = {}
-    else:
-        network_mode = "bridge"
-        ports = {
-            "8000/tcp": {"127.0.0.1", 8000},
-            "9000/tcp": {"127.0.0.1", 9000}
-        }
-
     mounts = [
-        Mount("/etc/localtime", "/usr/share/zoneinfo/America/Sao_Paulo", "bind"),
         Mount("/var/run/docker.sock", "/var/run/docker.sock", "bind"),
         Mount("/data", get_volume_name(), "volume")
     ]
+
+    if is_linux():
+        network_mode = "host"
+        ports = {}
+        mounts.append(Mount("/etc/localtime", "/usr/share/zoneinfo/America/Sao_Paulo", "bind"))
+    else:
+        network_mode = "bridge"
+        ports = {
+            "8000/tcp": ("127.0.0.1", 8000),
+            "9000/tcp": ("127.0.0.1", 9000)
+        }
 
     container = client.containers.run(
         image=image_name,
