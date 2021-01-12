@@ -138,26 +138,29 @@ def start_container():
     image_name = get_image_name()
     client = get_client()
 
-    mounts = [
-        Mount("/var/run/docker.sock", "/var/run/docker.sock", "bind"),
-        Mount("/data", get_volume_name(), "volume")
-    ]
+    volumes = {
+        "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"},
+        get_volume_name(): {"bind": "/data", "mode": "rw"}
+    }
 
-    file_tz = "/usr/share/zoneinfo/" + get_localzone()
+    file_tz = "/usr/share/zoneinfo/" + str(get_localzone())
 
     if is_linux():
         network_mode = "host"
         ports = {}
-        mounts.append(Mount("/etc/localtime", file_tz, "bind"))
+        volumes[file_tz] = {"bind": "/etc/localtime", "mode": "ro"}
     else:
         network_mode = "bridge"
-        ports = {"8000/tcp": ("127.0.0.1", 8000), "9000/tcp": ("127.0.0.1", 9000)}
+        ports = {
+            "8000/tcp": ("127.0.0.1", 8000),
+            "9000/tcp": ("127.0.0.1", 9000)
+        }
 
     container = client.containers.run(
         image=image_name,
         detach=True,
         hostname=container_name,
-        mounts=mounts,
+        volumes=volumes,
         name=container_name,
         network_mode=network_mode,
         ports=ports,
