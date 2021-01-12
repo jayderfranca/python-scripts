@@ -8,16 +8,17 @@ Manages the status of the portainer on the local machine
 __version__ = "1.0.0"
 __author__ = "Jayder França <jayderfranca@gmail.com>"
 
+from sys import argv as _argv
 from platform import system
 from os import getenv
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from textwrap import dedent
+from tzlocal import get_localzone
 from docker import from_env
 from docker.errors import DockerException, ImageNotFound, NotFound
 from docker.types import Mount
 
 
-# constantes globais
 START_ACTION = "start"
 STOP_ACTION = "stop"
 STATUS_ACTION = "status"
@@ -31,7 +32,7 @@ def is_linux():
     return system().lower() == "linux"
 
 
-def parse_arguments():
+def parse_arguments(args):
     version_text = dedent("%(prog)s " + __version__ + "\n" + "Author: " + __author__)
 
     parser = ArgumentParser(description=dedent(__doc__), formatter_class=RawDescriptionHelpFormatter, add_help=False)
@@ -45,7 +46,7 @@ def parse_arguments():
                            help="output version information and exit")
     optionals.add_argument("-h", "--help", action='help', help="display this help and exit")
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def get_client():
@@ -142,16 +143,15 @@ def start_container():
         Mount("/data", get_volume_name(), "volume")
     ]
 
+    file_tz = "/usr/share/zoneinfo/" + get_localzone()
+
     if is_linux():
         network_mode = "host"
         ports = {}
-        mounts.append(Mount("/etc/localtime", "/usr/share/zoneinfo/America/Sao_Paulo", "bind"))
+        mounts.append(Mount("/etc/localtime", file_tz, "bind"))
     else:
         network_mode = "bridge"
-        ports = {
-            "8000/tcp": ("127.0.0.1", 8000),
-            "9000/tcp": ("127.0.0.1", 9000)
-        }
+        ports = {"8000/tcp": ("127.0.0.1", 8000), "9000/tcp": ("127.0.0.1", 9000)}
 
     container = client.containers.run(
         image=image_name,
@@ -201,7 +201,10 @@ def run_action(action):
                 print(get_container_name() + " stopped")
 
 
-# entrypoint inicial
-if __name__ == '__main__':
-    args = parse_arguments()
+def main(argv):
+    args = parse_arguments(argv)
     run_action(args.action)
+
+
+if __name__ == '__main__':
+    main(_argv[1:])
