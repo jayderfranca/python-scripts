@@ -16,7 +16,6 @@ from textwrap import dedent
 from tzlocal import get_localzone
 from docker import from_env
 from docker.errors import DockerException, ImageNotFound, NotFound
-from docker.types import Mount
 
 
 START_ACTION = "start"
