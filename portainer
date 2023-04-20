@@ -32,7 +32,7 @@ def is_linux():
 
 
 def parse_arguments(args):
-    version_text = dedent("%(prog)s " + __version__ + "\n" + "Author: " + __author__)
+    version_text = dedent(f"%(prog)s {__version__}\nAuthor: {__author__}")
 
     parser = ArgumentParser(description=dedent(__doc__), formatter_class=RawDescriptionHelpFormatter, add_help=False)
 
@@ -52,7 +52,7 @@ def get_client():
     try:
         return from_env()
     except DockerException as ex:
-        print("Docker not available: " + str(ex))
+        print(f"Docker not available: {str(ex)}")
         return None
 
 
@@ -73,7 +73,7 @@ def create_volume():
     volume = get_volume()
     if volume is None:
         client = get_client()
-        print("creating volume " + get_volume_name() + " ...")
+        print(f"creating volume {get_volume_name()} ...")
         volume = client.volumes.create(name=get_volume_name(), driver="local", driver_opts={}, labels={})
     return volume
 
@@ -101,7 +101,7 @@ def pull_image():
     image = get_image()
     if image is None:
         client = get_client()
-        print("pulling image " + get_image_name() + " ...")
+        print(f"pulling image {get_image_name()} ...")
         image = client.images.pull(get_image_name())
     return image
 
@@ -142,7 +142,7 @@ def start_container():
         get_volume_name(): {"bind": "/data", "mode": "rw"}
     }
 
-    file_tz = "/usr/share/zoneinfo/" + str(get_localzone())
+    file_tz = f"/usr/share/zoneinfo/{str(get_localzone())}"
 
     if is_linux():
         network_mode = "host"
@@ -185,22 +185,22 @@ def run_action(action):
             create_volume()
             remove_container()
             container = start_container()
-            print(get_container_name() + " running: " + container.short_id)
+            print(f"{get_container_name()} running: {container.short_id}")
 
         elif action == STOP_ACTION:
             if container is not None:
                 stop_container()
                 remove_container()
                 remove_image()
-                print(get_container_name() + " (" + container.short_id + ") stopped and removed")
+                print(f"{get_container_name()} ({container.short_id}) stopped and removed")
             else:
-                print(get_container_name() + " stopped")
+                print(f"{get_container_name()} stopped")
 
         elif action == STATUS_ACTION:
             if container is not None and container.status == "running":
-                print(get_container_name() + " is running: " + container.short_id)
+                print(f"{get_container_name()} is running: {container.short_id}")
             else:
-                print(get_container_name() + " stopped")
+                print(f"{get_container_name()} stopped")
 
 
 def main(argv):

@@ -23,7 +23,7 @@ def get_client():
     try:
         return from_env()
     except DockerException as ex:
-        print("Docker not available: " + str(ex))
+        print(f"Docker not available: {str(ex)}")
         return None
 
 
@@ -50,7 +50,7 @@ def pull_image():
     image = get_image()
     if image is None:
         client = get_client()
-        print("pulling image " + get_image_name() + " ...")
+        print(f"pulling image {get_image_name()} ...")
         image = client.images.pull(get_image_name())
     return image
 
@@ -66,9 +66,9 @@ def run_container(argv):
     custom = getenv(ENV_CUSTOM, "")
 
     volumes = {
-        custom + "/etc/letsencrypt": {"bind": "/etc/letsencrypt", "mode": "rw"},
-        custom + "/var/lib/letsencrypt": {"bind": "/var/lib/letsencrypt", "mode": "rw"},
-        custom + "/var/log/letsencrypt": {"bind": "/var/log/letsencrypt", "mode": "rw"},
+        f"{custom}/etc/letsencrypt": {"bind": "/etc/letsencrypt", "mode": "rw"},
+        f"{custom}/var/lib/letsencrypt": {"bind": "/var/lib/letsencrypt", "mode": "rw"},
+        f"{custom}/var/log/letsencrypt": {"bind": "/var/log/letsencrypt", "mode": "rw"},
     }
 
     container = client.containers.run(
